@@ -28,7 +28,7 @@
             border-radius: 15px;
             padding: 25px;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1400px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
@@ -41,21 +41,23 @@
         
         .main-content {
             display: flex;
-            gap: 20px;
+            gap: 25px;
             margin-bottom: 20px;
         }
         
         .video-section {
-            flex: 3;
+            flex: 7;
+            display: flex;
+            flex-direction: column;
         }
         
         .timestamps-section {
-            flex: 2;
+            flex: 3;
             padding: 15px;
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             text-align: left;
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
         }
         
@@ -381,7 +383,7 @@
             transform: translateX(26px);
         }
         
-        @media (max-width: 900px) {
+        @media (max-width: 1100px) {
             .main-content {
                 flex-direction: column;
             }
@@ -404,6 +406,10 @@
             .timestamps-buttons {
                 flex-direction: column;
                 gap: 10px;
+            }
+            
+            .timestamps-section {
+                max-height: 300px;
             }
         }
     </style>
