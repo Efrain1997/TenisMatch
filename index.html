@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reproductor de Video con Shortcuts</title>
+    <title>Reproductor de Video con Marcas de Tiempo</title>
     <style>
         * {
             margin: 0;
@@ -28,7 +28,7 @@
             border-radius: 15px;
             padding: 25px;
             width: 100%;
-            max-width: 800px;
+            max-width: 900px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
@@ -118,9 +118,102 @@
             background: linear-gradient(to bottom, #1abc9c, #16a085);
         }
         
+        .prev-marker {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+        }
+        
+        .next-marker {
+            background: linear-gradient(to bottom, #e67e22, #d35400);
+        }
+        
         .control-btn:active {
             transform: scale(0.92);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .timestamps-section {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .timestamps-section h2 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+        
+        .timestamps-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.4);
+            color: white;
+            border: 1px solid #555;
+            margin-bottom: 15px;
+            resize: vertical;
+        }
+        
+        .timestamps-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .add-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            color: white;
+        }
+        
+        .clear-btn {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .markers-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .marker-btn {
+            padding: 8px 15px;
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        .marker-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(to bottom, #2980b9, #3498db);
+        }
+        
+        .marker-btn.active {
+            background: linear-gradient(to bottom, #e67e22, #d35400);
+            transform: scale(1.05);
         }
         
         .instructions {
@@ -134,6 +227,7 @@
         .instructions h2 {
             margin-bottom: 10px;
             font-size: 1.4rem;
+            text-align: center;
         }
         
         .instructions ul {
@@ -173,7 +267,7 @@
         
         @media (max-width: 600px) {
             .controls {
-                gap: 15px;
+                gap: 10px;
             }
             
             .control-btn {
@@ -186,12 +280,17 @@
                 width: 70px;
                 height: 70px;
             }
+            
+            .timestamps-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Reproductor de Video con Shortcuts</h1>
+        <h1>Reproductor de Video con Marcas de Tiempo</h1>
         
         <div class="upload-container">
             <label for="video-upload" class="upload-btn">
@@ -208,19 +307,39 @@
         </div>
         
         <div class="controls">
-            <div class="control-btn backward" id="backward-btn">
+            <div class="control-btn prev-marker" id="prev-marker-btn" title="Marcador anterior (Q)">
+                <span class="key">Q</span>
+            </div>
+            <div class="control-btn backward" id="backward-btn" title="Retroceder 2 segundos (A)">
                 <span class="key">A</span>
             </div>
-            <div class="control-btn play-pause" id="play-pause-btn">
+            <div class="control-btn play-pause" id="play-pause-btn" title="Play/Pausa (Espacio)">
                 <span class="key">⏯️</span>
             </div>
-            <div class="control-btn forward" id="forward-btn">
+            <div class="control-btn forward" id="forward-btn" title="Adelantar 2 segundos (D)">
                 <span class="key">D</span>
+            </div>
+            <div class="control-btn next-marker" id="next-marker-btn" title="Siguiente marcador (E)">
+                <span class="key">E</span>
             </div>
         </div>
         
         <div class="status" id="status">
             Presiona espacio para pausar/reanudar
+        </div>
+        
+        <div class="timestamps-section">
+            <h2>Marcas de Tiempo</h2>
+            <textarea class="timestamps-input" id="timestamps-input" placeholder="Ingresa las marcas de tiempo (una por línea) en formato m:ss. Ejemplo:&#10;0:00&#10;0:08&#10;0:15&#10;0:24"></textarea>
+            
+            <div class="timestamps-buttons">
+                <button class="action-btn clear-btn" id="clear-timestamps">Borrar Marcas</button>
+                <button class="action-btn add-btn" id="add-timestamps">Agregar Marcas</button>
+            </div>
+            
+            <div class="markers-container" id="markers-container">
+                <!-- Los botones de marcas de tiempo se generarán aquí -->
+            </div>
         </div>
         
         <div class="instructions">
@@ -229,6 +348,8 @@
                 <li><span class="key">A</span> Retroceder 2 segundos</li>
                 <li><span class="key">D</span> Adelantar 2 segundos</li>
                 <li><span class="key">Espacio</span> Pausar/Reanudar</li>
+                <li><span class="key">Q</span> Marcador anterior</li>
+                <li><span class="key">E</span> Siguiente marcador</li>
             </ul>
         </div>
     </div>
@@ -242,6 +363,15 @@
             const playPauseBtn = document.getElementById('play-pause-btn');
             const backwardBtn = document.getElementById('backward-btn');
             const forwardBtn = document.getElementById('forward-btn');
+            const prevMarkerBtn = document.getElementById('prev-marker-btn');
+            const nextMarkerBtn = document.getElementById('next-marker-btn');
+            const timestampsInput = document.getElementById('timestamps-input');
+            const clearTimestampsBtn = document.getElementById('clear-timestamps');
+            const addTimestampsBtn = document.getElementById('add-timestamps');
+            const markersContainer = document.getElementById('markers-container');
+            
+            let markers = [];
+            let currentMarkerIndex = -1;
             
             // Cargar video
             videoUpload.addEventListener('change', function(e) {
@@ -297,15 +427,137 @@
                 }, 100);
             }
             
+            // Convertir tiempo en formato m:ss a segundos
+            function timeToSeconds(timeStr) {
+                const parts = timeStr.split(':');
+                if (parts.length === 2) {
+                    return parseInt(parts[0]) * 60 + parseInt(parts[1]);
+                }
+                return 0;
+            }
+            
+            // Convertir segundos a formato m:ss
+            function secondsToTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+            
+            // Agregar marcas de tiempo
+            function addTimestamps() {
+                const text = timestampsInput.value.trim();
+                if (!text) return;
+                
+                const lines = text.split('\n');
+                markers = [];
+                
+                lines.forEach(line => {
+                    line = line.trim();
+                    if (line) {
+                        const seconds = timeToSeconds(line);
+                        if (!isNaN(seconds)) {
+                            markers.push({
+                                text: line,
+                                seconds: seconds
+                            });
+                        }
+                    }
+                });
+                
+                renderMarkers();
+                status.textContent = `Se agregaron ${markers.length} marcas de tiempo`;
+            }
+            
+            // Renderizar marcadores
+            function renderMarkers() {
+                markersContainer.innerHTML = '';
+                
+                markers.forEach((marker, index) => {
+                    const button = document.createElement('div');
+                    button.className = 'marker-btn';
+                    button.textContent = marker.text;
+                    button.addEventListener('click', () => {
+                        jumpToMarker(index);
+                    });
+                    markersContainer.appendChild(button);
+                });
+            }
+            
+            // Saltar a un marcador
+            function jumpToMarker(index) {
+                if (index >= 0 && index < markers.length) {
+                    videoPlayer.currentTime = markers[index].seconds;
+                    status.textContent = `Saltando a ${markers[index].text}`;
+                    
+                    // Resaltar el marcador actual
+                    const allMarkers = document.querySelectorAll('.marker-btn');
+                    allMarkers.forEach(m => m.classList.remove('active'));
+                    allMarkers[index].classList.add('active');
+                    
+                    currentMarkerIndex = index;
+                }
+            }
+            
+            // Navegar al marcador anterior
+            function goToPrevMarker() {
+                if (markers.length === 0) {
+                    status.textContent = 'No hay marcas de tiempo definidas';
+                    return;
+                }
+                
+                let newIndex = currentMarkerIndex - 1;
+                if (newIndex < 0) newIndex = markers.length - 1;
+                
+                jumpToMarker(newIndex);
+                
+                // Animación del botón
+                prevMarkerBtn.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    prevMarkerBtn.style.transform = 'scale(1)';
+                }, 100);
+            }
+            
+            // Navegar al siguiente marcador
+            function goToNextMarker() {
+                if (markers.length === 0) {
+                    status.textContent = 'No hay marcas de tiempo definidas';
+                    return;
+                }
+                
+                let newIndex = currentMarkerIndex + 1;
+                if (newIndex >= markers.length) newIndex = 0;
+                
+                jumpToMarker(newIndex);
+                
+                // Animación del botón
+                nextMarkerBtn.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    nextMarkerBtn.style.transform = 'scale(1)';
+                }, 100);
+            }
+            
+            // Limpiar marcas de tiempo
+            function clearTimestamps() {
+                markers = [];
+                currentMarkerIndex = -1;
+                timestampsInput.value = '';
+                markersContainer.innerHTML = '';
+                status.textContent = 'Marcas de tiempo eliminadas';
+            }
+            
             // Eventos para los botones
             playPauseBtn.addEventListener('click', togglePlay);
             backwardBtn.addEventListener('click', backward);
             forwardBtn.addEventListener('click', forward);
+            prevMarkerBtn.addEventListener('click', goToPrevMarker);
+            nextMarkerBtn.addEventListener('click', goToNextMarker);
+            addTimestampsBtn.addEventListener('click', addTimestamps);
+            clearTimestampsBtn.addEventListener('click', clearTimestamps);
             
             // Eventos de teclado
             document.addEventListener('keydown', function(e) {
                 // Solo actuar si no se está escribiendo en un campo de texto
-                if (e.target.tagName.toLowerCase() === 'input') return;
+                if (e.target.tagName.toLowerCase() === 'textarea' || e.target.tagName.toLowerCase() === 'input') return;
                 
                 switch(e.code) {
                     case 'KeyA':
@@ -322,6 +574,22 @@
                         forwardBtn.style.transform = 'scale(0.9)';
                         setTimeout(() => {
                             forwardBtn.style.transform = 'scale(1)';
+                        }, 100);
+                        break;
+                    case 'KeyQ':
+                        goToPrevMarker();
+                        // Animación del botón
+                        prevMarkerBtn.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            prevMarkerBtn.style.transform = 'scale(1)';
+                        }, 100);
+                        break;
+                    case 'KeyE':
+                        goToNextMarker();
+                        // Animación del botón
+                        nextMarkerBtn.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            nextMarkerBtn.style.transform = 'scale(1)';
                         }, 100);
                         break;
                     case 'Space':
@@ -351,6 +619,10 @@
                 status.textContent = 'Video finalizado';
                 playPauseBtn.innerHTML = '<span class="key">▶️</span>';
             });
+            
+            // Cargar marcas de tiempo de ejemplo
+            timestampsInput.value = "0:00\n0:08\n0:15\n0:24\n0:32\n0:40\n0:47\n0:56\n1:05\n1:14\n1:21\n1:29\n1:38";
+            addTimestamps();
         });
     </script>
 </body>
