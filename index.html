@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor de Video con Shortcuts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 25px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        video {
+            width: 100%;
+            display: block;
+            background-color: #000;
+        }
+        
+        .upload-container {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-block;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .control-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+        
+        .backward {
+            background: linear-gradient(to bottom, #ff6b6b, #c0392b);
+        }
+        
+        .play-pause {
+            background: linear-gradient(to bottom, #3498db, #2980b9);
+            width: 80px;
+            height: 80px;
+        }
+        
+        .forward {
+            background: linear-gradient(to bottom, #1abc9c, #16a085);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.92);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .instructions h2 {
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+        
+        .instructions ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .key {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            margin-right: 10px;
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .current-file {
+            margin-top: 15px;
+            font-style: italic;
+            color: #ddd;
+        }
+        
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 600px) {
+            .controls {
+                gap: 15px;
+            }
+            
+            .control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1rem;
+            }
+            
+            .play-pause {
+                width: 70px;
+                height: 70px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Reproductor de Video con Shortcuts</h1>
+        
+        <div class="upload-container">
+            <label for="video-upload" class="upload-btn">
+                Seleccionar Video MP4
+            </label>
+            <input type="file" id="video-upload" class="file-input" accept="video/mp4">
+            <p class="current-file" id="current-file">Ningún archivo seleccionado</p>
+        </div>
+        
+        <div class="video-container">
+            <video id="video-player">
+                Tu navegador no soporta la reproducción de videos.
+            </video>
+        </div>
+        
+        <div class="controls">
+            <div class="control-btn backward" id="backward-btn">
+                <span class="key">A</span>
+            </div>
+            <div class="control-btn play-pause" id="play-pause-btn">
+                <span class="key">⏯️</span>
+            </div>
+            <div class="control-btn forward" id="forward-btn">
+                <span class="key">D</span>
+            </div>
+        </div>
+        
+        <div class="status" id="status">
+            Presiona espacio para pausar/reanudar
+        </div>
+        
+        <div class="instructions">
+            <h2>Instrucciones:</h2>
+            <ul>
+                <li><span class="key">A</span> Retroceder 2 segundos</li>
+                <li><span class="key">D</span> Adelantar 2 segundos</li>
+                <li><span class="key">Espacio</span> Pausar/Reanudar</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoPlayer = document.getElementById('video-player');
+            const videoUpload = document.getElementById('video-upload');
+            const currentFile = document.getElementById('current-file');
+            const status = document.getElementById('status');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const backwardBtn = document.getElementById('backward-btn');
+            const forwardBtn = document.getElementById('forward-btn');
+            
+            // Cargar video
+            videoUpload.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const videoURL = URL.createObjectURL(file);
+                    videoPlayer.src = videoURL;
+                    currentFile.textContent = `Archivo actual: ${file.name}`;
+                    status.textContent = 'Video cargado. Presiona play para comenzar.';
+                }
+            });
+            
+            // Control de reproducción
+            function togglePlay() {
+                if (videoPlayer.paused || videoPlayer.ended) {
+                    videoPlayer.play();
+                    playPauseBtn.innerHTML = '<span class="key">⏸️</span>';
+                    status.textContent = 'Reproduciendo';
+                } else {
+                    videoPlayer.pause();
+                    playPauseBtn.innerHTML = '<span class="key">▶️</span>';
+                    status.textContent = 'Pausado';
+                }
+            }
+            
+            // Retroceder 2 segundos
+            function backward() {
+                videoPlayer.currentTime = Math.max(0, videoPlayer.currentTime - 2);
+                status.textContent = 'Retrocediendo 2 segundos';
+                setTimeout(() => {
+                    if (!videoPlayer.paused) status.textContent = 'Reproduciendo';
+                }, 1000);
+                
+                // Animación del botón
+                backwardBtn.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    backwardBtn.style.transform = 'scale(1)';
+                }, 100);
+            }
+            
+            // Adelantar 2 segundos
+            function forward() {
+                videoPlayer.currentTime = Math.min(videoPlayer.duration, videoPlayer.currentTime + 2);
+                status.textContent = 'Adelantando 2 segundos';
+                setTimeout(() => {
+                    if (!videoPlayer.paused) status.textContent = 'Reproduciendo';
+                }, 1000);
+                
+                // Animación del botón
+                forwardBtn.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    forwardBtn.style.transform = 'scale(1)';
+                }, 100);
+            }
+            
+            // Eventos para los botones
+            playPauseBtn.addEventListener('click', togglePlay);
+            backwardBtn.addEventListener('click', backward);
+            forwardBtn.addEventListener('click', forward);
+            
+            // Eventos de teclado
+            document.addEventListener('keydown', function(e) {
+                // Solo actuar si no se está escribiendo en un campo de texto
+                if (e.target.tagName.toLowerCase() === 'input') return;
+                
+                switch(e.code) {
+                    case 'KeyA':
+                        backward();
+                        // Animación del botón
+                        backwardBtn.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            backwardBtn.style.transform = 'scale(1)';
+                        }, 100);
+                        break;
+                    case 'KeyD':
+                        forward();
+                        // Animación del botón
+                        forwardBtn.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            forwardBtn.style.transform = 'scale(1)';
+                        }, 100);
+                        break;
+                    case 'Space':
+                        e.preventDefault(); // Evitar que se desplace la página
+                        togglePlay();
+                        // Animación del botón
+                        playPauseBtn.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            playPauseBtn.style.transform = 'scale(1)';
+                        }, 100);
+                        break;
+                }
+            });
+            
+            // Actualizar estado del video
+            videoPlayer.addEventListener('play', function() {
+                status.textContent = 'Reproduciendo';
+                playPauseBtn.innerHTML = '<span class="key">⏸️</span>';
+            });
+            
+            videoPlayer.addEventListener('pause', function() {
+                status.textContent = 'Pausado';
+                playPauseBtn.innerHTML = '<span class="key">▶️</span>';
+            });
+            
+            videoPlayer.addEventListener('ended', function() {
+                status.textContent = 'Video finalizado';
+                playPauseBtn.innerHTML = '<span class="key">▶️</span>';
+            });
+        });
+    </script>
+</body>
+</html>
